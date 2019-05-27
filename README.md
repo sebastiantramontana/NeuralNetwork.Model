@@ -1,2 +1,2 @@
 # NeuralNetwork.Model
-A neuralnetwork object model
+A neural network object model
