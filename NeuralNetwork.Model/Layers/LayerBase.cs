@@ -12,7 +12,7 @@ namespace NeuralNetwork.Model.Layers
 
         }
 
-        public PerceptronLayer Next { get; internal set; }
+        public NeuronLayer Next { get; internal set; }
 
         private Bias _Bias = null;
         public Bias Bias
@@ -25,7 +25,7 @@ namespace NeuralNetwork.Model.Layers
             }
         }
 
-        public void Connect(PerceptronLayer nextLayer)
+        public void Connect(NeuronLayer nextLayer)
         {
             if (nextLayer == null) //Cut off the layer link
             {
@@ -57,21 +57,21 @@ namespace NeuralNetwork.Model.Layers
 
         protected void ConnectNodeToNextLayer(NodeBase node)
         {
-            //Connect the edges... they are perceptrons
+            //Connect the edges... they are neurons
             ConnectNodeToNextLayer(node, this.Next);
         }
 
-        protected void ConnectNodeToNextLayer(NodeBase previousNode, PerceptronLayer nextLayer)
+        protected void ConnectNodeToNextLayer(NodeBase previousNode, NeuronLayer nextLayer)
         {
             //Connect the edges...
             if (nextLayer == null)
                 return;
 
-            var nextPerceptrons = nextLayer.Nodes; //they are perceptrons
+            var nextNeuronss = nextLayer.Nodes; //they are neurons
 
-            foreach (var nextPerceptron in nextPerceptrons)
+            foreach (var nextNeuron in nextNeuronss)
             {
-                nextPerceptron.EdgesInternal.Add(Edge.Create(previousNode, nextPerceptron));
+                nextNeuron.EdgesInternal.Add(Edge.Create(previousNode, nextNeuron));
             }
         }
 
@@ -81,11 +81,11 @@ namespace NeuralNetwork.Model.Layers
             if (this.Next == null || node == null)
                 return;
 
-            var nextPerceptrons = this.Next.Nodes;
+            var nextNeurons = this.Next.Nodes;
 
-            foreach (var nextPerceptron in nextPerceptrons)
+            foreach (var nextNeuron in nextNeurons)
             {
-                nextPerceptron.EdgesInternal.Remove(nextPerceptron.Edges.Single(e => e.Source == node));
+                nextNeuron.EdgesInternal.Remove(nextNeuron.Edges.Single(e => e.Source == node));
             }
         }
 

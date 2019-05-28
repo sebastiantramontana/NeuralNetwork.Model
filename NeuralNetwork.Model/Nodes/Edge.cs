@@ -13,10 +13,10 @@ namespace NeuralNetwork.Model.Nodes
         }
 
         public NodeBase Source { get; private set; }
-        public Perceptron Destination { get; private set; }
+        public Neuron Destination { get; private set; }
         public double? Weight { get; set; }
 
-        internal static Edge Create(NodeBase source, Perceptron destination)
+        internal static Edge Create(NodeBase source, Neuron destination)
         {
             if (source == null || destination == null)
                 throw new ArgumentNullException("source and/or destination arguments are null");

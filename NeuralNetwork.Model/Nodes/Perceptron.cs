@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace NeuralNetwork.Model.Nodes
 {
-    public class Perceptron : NodeBase
+    public class Neuron : NodeBase
     {
-        public Perceptron(string id) : base(id)
+        public Neuron(string id) : base(id)
         {
             this.EdgesInternal = new List<Edge>();
         }

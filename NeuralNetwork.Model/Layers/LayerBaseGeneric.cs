@@ -49,7 +49,7 @@ namespace NeuralNetwork.Model.Layers
 
         private protected override void ConnectChild()
         {
-            for (PerceptronLayer layer = this.Next; layer != null; layer = layer.Next)
+            for (NeuronLayer layer = this.Next; layer != null; layer = layer.Next)
             {
                 layer.RemoveEdgesLayer();
 

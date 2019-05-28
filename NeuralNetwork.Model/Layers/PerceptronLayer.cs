@@ -2,9 +2,9 @@
 
 namespace NeuralNetwork.Model.Layers
 {
-    public class PerceptronLayer : LayerBase<Perceptron>
+    public class NeuronLayer : LayerBase<Neuron>
     {
-        public PerceptronLayer(string id) : base(id)
+        public NeuronLayer(string id) : base(id)
         {
 
         }
@@ -48,26 +48,26 @@ namespace NeuralNetwork.Model.Layers
             }
         }
 
-        private protected override void AddNodeChild(Perceptron perceptron)
+        private protected override void AddNodeChild(Neuron neuron)
         {
-            ConnectPerceptronToPreviousLayer(perceptron);
+            ConnectNeuronToPreviousLayer(neuron);
         }
 
-        private protected override void RemoveNodeChild(Perceptron perceptron)
+        private protected override void RemoveNodeChild(Neuron neuron)
         {
-            perceptron.EdgesInternal.Clear();
+            neuron.EdgesInternal.Clear();
         }
 
-        private void ConnectPerceptronToPreviousLayer(Perceptron perceptron)
+        private void ConnectNeuronToPreviousLayer(Neuron neuron)
         {
-            perceptron.EdgesInternal.Clear();
+            neuron.EdgesInternal.Clear();
 
             if (this.Previous == null)
                 return;
 
             foreach (var previousNode in this.Previous.GetAllNodes())
             {
-                perceptron.EdgesInternal.Add(Edge.Create(previousNode, perceptron));
+                neuron.EdgesInternal.Add(Edge.Create(previousNode, neuron));
             }
         }
     }
