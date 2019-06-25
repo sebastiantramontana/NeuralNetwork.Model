@@ -1,67 +1,99 @@
 ﻿using NeuralNetwork.Model.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace NeuralNetwork.Model
 {
-    public abstract class Element : IEquatable<Element>
-    {
-        internal Element(string id)
-        {
-            this.Id = id;
-            this.ValidateId();
-        }
+   public abstract class Element : IEquatable<Element>, INotifyPropertyChanged
+   {
+      private string _id;
+      private object _object;
 
-        public string Id { get; set; }
-        public object Object { get; set; }
+      public event PropertyChangedEventHandler PropertyChanged;
 
-        internal void ValidateId(IDictionary<string, Element> acumulatedIds)
-        {
-            ValidateId();
+      internal Element(string id)
+      {
+         _id = id;
+         ValidateId();
+      }
 
-            if (acumulatedIds == null)
-                throw new ArgumentNullException($"Internal Error: {nameof(acumulatedIds)} is null.");
+      public string Id
+      {
+         get => _id;
+         set { ChangeProperty(ref _id, value); }
+      }
 
-            if (acumulatedIds.ContainsKey(this.Id))
-                throw new DuplicatedIdException(this.Id);
+      public object Object
+      {
+         get => _object;
+         set { ChangeProperty(ref _object, value); }
+      }
 
-            acumulatedIds.Add(this.Id, this);
+      internal void ValidateId(IDictionary<string, Element> acumulatedIds)
+      {
+         ValidateId();
 
-            ValidateDuplicatedIChild(acumulatedIds);
-        }
+         if (acumulatedIds == null)
+            throw new ArgumentNullException($"Internal Error: {nameof(acumulatedIds)} is null.");
 
-        private void ValidateId()
-        {
-            if (string.IsNullOrWhiteSpace(this.Id))
-                throw new InvalidIdException(this.Id);
-        }
+         if (acumulatedIds.ContainsKey(this.Id))
+            throw new DuplicatedIdException(this.Id);
 
-        private protected virtual void ValidateDuplicatedIChild(IDictionary<string, Element> acumulatedIds)
-        {
+         acumulatedIds.Add(this.Id, this);
 
-        }
+         ValidateDuplicatedIChild(acumulatedIds);
+      }
 
-        public override bool Equals(object obj)
-        {
-            return this.Equals(obj as Element);
-        }
-        public bool Equals(Element other)
-        {
-            return !(other is null) && (Object.ReferenceEquals(this, other) || this.Id == other.Id);
-        }
+      private void ValidateId()
+      {
+         if (string.IsNullOrWhiteSpace(this.Id))
+            throw new InvalidIdException(this.Id);
+      }
 
-        public override int GetHashCode()
-        {
-            return this.Id.GetHashCode();
-        }
+      private protected void ChangeProperty<T>(ref T prop, T newValue, [CallerMemberName] string propertyName = null)
+      {
+         prop = newValue;
+         FireChanges(this, propertyName);
+      }
 
-        public override string ToString()
-        {
-            return this.Id;
-        }
-        public static bool operator ==(Element b1, Element b2) => Object.Equals(b1, b2);
-        public static bool operator !=(Element b1, Element b2) => !Object.Equals(b1, b2);
+      private protected void FireChanges(object sender, string properyName)
+      {
+         PropertyChanged?.Invoke(sender, new PropertyChangedEventArgs(properyName));
+      }
 
+      private protected void FireChanges(string properyName)
+      {
+         FireChanges(this, properyName);
+      }
 
-    }
+      private protected virtual void ValidateDuplicatedIChild(IDictionary<string, Element> acumulatedIds)
+      {
+
+      }
+
+      public override bool Equals(object obj)
+      {
+         return this.Equals(obj as Element);
+      }
+
+      public bool Equals(Element other)
+      {
+         return !(other is null) && (Object.ReferenceEquals(this, other) || this.Id == other.Id);
+      }
+
+      public override int GetHashCode()
+      {
+         return this.Id.GetHashCode();
+      }
+
+      public override string ToString()
+      {
+         return this.Id;
+      }
+
+      public static bool operator ==(Element b1, Element b2) => Object.Equals(b1, b2);
+      public static bool operator !=(Element b1, Element b2) => !Object.Equals(b1, b2);
+   }
 }

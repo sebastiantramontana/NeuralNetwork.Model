@@ -1,129 +1,154 @@
 ﻿using NeuralNetwork.Model.Nodes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace NeuralNetwork.Model.Layers
 {
-    public abstract class LayerBase : Element
-    {
-        internal LayerBase(string id) : base(id)
-        {
+   public abstract class LayerBase : Element
+   {
+      internal LayerBase(string id) : base(id)
+      {
 
-        }
+      }
 
-        public NeuronLayer Next { get; internal set; }
+      public NeuronLayer Next { get; internal set; }
 
-        private Bias _Bias = null;
-        public Bias Bias
-        {
-            get { return _Bias; }
-            set
-            {
-                SetNewBias(value);
-                _Bias = value;
-            }
-        }
+      private Bias _bias = null;
+      public Bias Bias
+      {
+         get { return _bias; }
+         set
+         {
+            SetNewBias(value);
+            ChangeProperty(ref _bias, value);
+         }
+      }
 
-        public void Connect(NeuronLayer nextLayer)
-        {
-            if (nextLayer == null) //Cut off the layer link
-            {
-                if (this.Next != null)
-                {
-                    this.Next.Previous = null; //cancel the Next's Previous layer (this) 
-                }
-
-                this.Next = null;
-                return;
-            }
-
+      public void Connect(NeuronLayer nextLayer)
+      {
+         if (nextLayer == null) //Cut off the layer link
+         {
             if (this.Next != null)
             {
-                this.Next.Previous = nextLayer;
-                nextLayer.Next = this.Next;
+               this.Next.Previous = null; //cancel the Next's Previous layer (this) 
             }
 
-            this.Next = nextLayer;
-            nextLayer.Previous = this;
+            this.Next = null;
 
-            ConnectChild();
-        }
+            FireChanges("Next");
+            return;
+         }
 
-        internal void Reconnect()
-        {
-            ConnectChild();
-        }
+         if (this.Next != null)
+         {
+            this.Next.Previous = nextLayer;
+            nextLayer.Next = this.Next;
+         }
 
-        protected void ConnectNodeToNextLayer(NodeBase node)
-        {
-            //Connect the edges... they are neurons
-            ConnectNodeToNextLayer(node, this.Next);
-        }
+         this.Next = nextLayer;
+         nextLayer.Previous = this;
 
-        protected void ConnectNodeToNextLayer(NodeBase previousNode, NeuronLayer nextLayer)
-        {
-            //Connect the edges...
-            if (nextLayer == null)
-                return;
+         ConnectChild();
 
-            var nextNeuronss = nextLayer.Nodes; //they are neurons
+         FireChanges("Next");
+         nextLayer.PropertyChanged += NextLayer_PropertyChanged;
+      }
 
-            foreach (var nextNeuron in nextNeuronss)
-            {
-                nextNeuron.EdgesInternal.Add(Edge.Create(previousNode, nextNeuron));
-            }
-        }
+      internal void Reconnect()
+      {
+         ConnectChild();
+      }
 
-        protected void DisconnectNodeFromNextLayer(NodeBase node)
-        {
-            //Disconnect the edges...
-            if (this.Next == null || node == null)
-                return;
+      internal void UnsubscribeChangesNextLayer()
+      {
+         if (this.Next != null)
+         {
+            this.Next.PropertyChanged -= NextLayer_PropertyChanged;
+         }
+      }
 
-            var nextNeurons = this.Next.Nodes;
+      protected void ConnectNodeToNextLayer(NodeBase node)
+      {
+         //Connect the edges... they are neurons
+         ConnectNodeToNextLayer(node, this.Next);
+      }
 
-            foreach (var nextNeuron in nextNeurons)
-            {
-                nextNeuron.EdgesInternal.Remove(nextNeuron.Edges.Single(e => e.Source == node));
-            }
-        }
+      protected void ConnectNodeToNextLayer(NodeBase previousNode, NeuronLayer nextLayer)
+      {
+         //Connect the edges...
+         if (nextLayer == null)
+            return;
 
-        protected void SetNodeToLayer(NodeBase node)
-        {
-            if (node.Layer != null)
-                throw new InvalidOperationException($"Node '{node.Id}' already belongs to another layer. Remove the node from the other layer, then add to this one.");
+         var nextNeuronss = nextLayer.Nodes; //they are neurons
 
-            node.Layer = this;
-        }
+         foreach (var nextNeuron in nextNeuronss)
+         {
+            var edge = Edge.Create(previousNode, nextNeuron);
+            edge.PropertyChanged += Edge_PropertyChanged;
 
-        protected void SetNewBias(Bias bias)
-        {
-            if (bias == null)
-            {
+            nextNeuron.EdgesInternal.Add(edge);
+         }
+      }
 
-                DisconnectNodeFromNextLayer(this.Bias);
-            }
-            else
-            {
-                SetNodeToLayer(bias);
-                ConnectNodeToNextLayer(bias);
-            }
-        }
+      protected void DisconnectNodeFromNextLayer(NodeBase node)
+      {
+         //Disconnect the edges...
+         if (this.Next == null || node == null)
+            return;
 
-        private protected override void ValidateDuplicatedIChild(IDictionary<string, Element> acumulatedIds)
-        {
-            foreach (var node in this.GetAllNodes())
-                node.ValidateId(acumulatedIds);
+         var nextNeurons = this.Next.Nodes;
 
-            if (this.Next != null)
-                this.Next.ValidateId(acumulatedIds);
-        }
+         foreach (var nextNeuron in nextNeurons)
+         {
+            nextNeuron.EdgesInternal.Remove(nextNeuron.Edges.Single(e => e.Source == node));
+         }
+      }
 
-        public abstract IEnumerable<NodeBase> GetAllNodes();
-        public abstract void RemoveNode(string nodeId);
+      protected void SetNodeToLayer(NodeBase node)
+      {
+         if (node.Layer != null)
+            throw new InvalidOperationException($"Node '{node.Id}' already belongs to another layer. Remove the node from the other layer, then add to this one.");
 
-        private protected abstract void ConnectChild();
+         node.Layer = this;
+      }
 
-    }
+      protected void SetNewBias(Bias newBias)
+      {
+         if (newBias == null)
+         {
+            DisconnectNodeFromNextLayer(this.Bias);
+         }
+         else
+         {
+            SetNodeToLayer(newBias);
+            ConnectNodeToNextLayer(newBias);
+         }
+      }
+
+      private void Edge_PropertyChanged(object sender, PropertyChangedEventArgs e)
+      {
+         FireChanges(sender, e.PropertyName);
+      }
+
+      private void NextLayer_PropertyChanged(object sender, PropertyChangedEventArgs e)
+      {
+         FireChanges(sender, e.PropertyName);
+      }
+
+      private protected override void ValidateDuplicatedIChild(IDictionary<string, Element> acumulatedIds)
+      {
+         foreach (var node in this.GetAllNodes())
+            node.ValidateId(acumulatedIds);
+
+         if (this.Next != null)
+            this.Next.ValidateId(acumulatedIds);
+      }
+
+      public abstract IEnumerable<NodeBase> GetAllNodes();
+      public abstract void RemoveNode(string nodeId);
+
+      private protected abstract void ConnectChild();
+   }
 }

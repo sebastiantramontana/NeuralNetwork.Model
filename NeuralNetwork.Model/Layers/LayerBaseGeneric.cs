@@ -1,66 +1,79 @@
 ﻿using NeuralNetwork.Model.Nodes;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace NeuralNetwork.Model.Layers
 {
-    public abstract class LayerBase<TNode> : LayerBase where TNode : NodeBase
-    {
-        private readonly IDictionary<string, TNode> _nodes;
-        internal LayerBase(string id) : base(id)
-        {
-            _nodes = new Dictionary<string, TNode>();
-        }
-        public IEnumerable<TNode> Nodes { get => _nodes.Values; }
+   public abstract class LayerBase<TNode> : LayerBase where TNode : NodeBase
+   {
+      private readonly IDictionary<string, TNode> _nodes;
+      internal LayerBase(string id) : base(id)
+      {
+         _nodes = new Dictionary<string, TNode>();
+      }
 
-        public void AddNode(TNode node)
-        {
-            SetNodeToLayer(node);
-            _nodes.Add(node.Id, node);
+      public IEnumerable<TNode> Nodes { get => _nodes.Values; }
 
-            ConnectNodeToNextLayer(node);
-            AddNodeChild(node);
-        }
+      public void AddNode(TNode node)
+      {
+         SetNodeToLayer(node);
+         _nodes.Add(node.Id, node);
 
-        public void RemoveNode(TNode node)
-        {
-            _nodes.Remove(node.Id);
+         ConnectNodeToNextLayer(node);
+         AddNodeChild(node);
 
-            DisconnectNodeFromNextLayer(node);
-            RemoveNodeChild(node);
-        }
+         FireChanges("Nodes");
+         node.PropertyChanged += Node_PropertyChanged;
+      }
 
-        public override void RemoveNode(string nodeId)
-        {
-            if (!_nodes.TryGetValue(nodeId, out TNode node))
-                return;
+      public void RemoveNode(TNode node)
+      {
+         _nodes.Remove(node.Id);
 
-            RemoveNode(node);
-        }
+         DisconnectNodeFromNextLayer(node);
+         RemoveNodeChild(node);
 
-        public override IEnumerable<NodeBase> GetAllNodes()
-        {
-            var nodes = new List<NodeBase>(_nodes.Values);
+         node.PropertyChanged -= Node_PropertyChanged;
+         FireChanges("Nodes");
+      }
 
-            if (this.Bias != null)
-                nodes.Add(this.Bias);
+      public override void RemoveNode(string nodeId)
+      {
+         if (!_nodes.TryGetValue(nodeId, out TNode node))
+            return;
 
-            return nodes;
-        }
+         RemoveNode(node);
+      }
 
-        private protected override void ConnectChild()
-        {
-            for (NeuronLayer layer = this.Next; layer != null; layer = layer.Next)
+      public override IEnumerable<NodeBase> GetAllNodes()
+      {
+         var nodes = new List<NodeBase>(_nodes.Values);
+
+         if (this.Bias != null)
+            nodes.Add(this.Bias);
+
+         return nodes;
+      }
+
+      private protected override void ConnectChild()
+      {
+         for (NeuronLayer layer = this.Next; layer != null; layer = layer.Next)
+         {
+            layer.RemoveEdgesLayer();
+
+            foreach (var node in layer.Previous.GetAllNodes())
             {
-                layer.RemoveEdgesLayer();
-
-                foreach (var node in layer.Previous.GetAllNodes())
-                {
-                    ConnectNodeToNextLayer(node, layer);
-                }
+               ConnectNodeToNextLayer(node, layer);
             }
-        }
+         }
+      }
 
-        private protected virtual void AddNodeChild(TNode node) { }
-        private protected virtual void RemoveNodeChild(TNode node) { }
-    }
+      private void Node_PropertyChanged(object sender, PropertyChangedEventArgs e)
+      {
+         FireChanges(sender, e.PropertyName);
+      }
+
+      private protected virtual void AddNodeChild(TNode node) { }
+      private protected virtual void RemoveNodeChild(TNode node) { }
+   }
 }
