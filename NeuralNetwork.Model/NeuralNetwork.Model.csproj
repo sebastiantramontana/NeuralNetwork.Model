@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Description>A .Net neural network object model</Description>
     <Copyright>Copyright ©  2018</Copyright>
     <Authors>Sebastian Tramontana</Authors>
