@@ -1,4 +1,5 @@
 ﻿using NeuralNetwork.Model.Nodes;
+using System.ComponentModel;
 
 namespace NeuralNetwork.Model.Layers
 {
@@ -78,7 +79,7 @@ namespace NeuralNetwork.Model.Layers
          }
       }
 
-      private void Edge_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+      private void Edge_PropertyChanged(object sender, PropertyChangedEventArgs e)
       {
          FireChanges(sender, e.PropertyName);
       }

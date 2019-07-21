@@ -1,6 +1,7 @@
 ﻿using NeuralNetwork.Model.Exceptions;
 using NeuralNetwork.Model.Nodes;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace NeuralNetwork.Model.Layers
@@ -11,6 +12,12 @@ namespace NeuralNetwork.Model.Layers
 
       public InputLayer(string id) : base(id)
       {
+         this.PropertyChanged += InputPropertyChanged;
+      }
+
+      private void InputPropertyChanged(object sender, PropertyChangedEventArgs e)
+      {
+         ReloadAllElementDictionary();
       }
 
       /// <summary>
@@ -96,11 +103,6 @@ namespace NeuralNetwork.Model.Layers
          ValidateId(acumulatedIds);
 
          _allElements = acumulatedIds; //model could have been changed
-      }
-
-      private protected override void OnFireChanging()
-      {
-         ReloadAllElementDictionary();
       }
    }
 }

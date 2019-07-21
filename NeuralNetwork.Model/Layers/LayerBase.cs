@@ -21,8 +21,14 @@ namespace NeuralNetwork.Model.Layers
          get { return _bias; }
          set
          {
+            if (_bias != null)
+               _bias.PropertyChanged -= Bias_PropertyChanged;
+
             SetNewBias(value);
             ChangeProperty(ref _bias, value);
+
+            if (_bias != null)
+               _bias.PropertyChanged += Bias_PropertyChanged;
          }
       }
 
@@ -102,7 +108,10 @@ namespace NeuralNetwork.Model.Layers
 
          foreach (var nextNeuron in nextNeurons)
          {
-            nextNeuron.EdgesInternal.Remove(nextNeuron.Edges.Single(e => e.Source == node));
+            var edge = nextNeuron.Edges.Single(e => e.Source == node);
+            edge.PropertyChanged -= Edge_PropertyChanged;
+
+            nextNeuron.EdgesInternal.Remove(edge);
          }
       }
 
@@ -133,6 +142,11 @@ namespace NeuralNetwork.Model.Layers
       }
 
       private void NextLayer_PropertyChanged(object sender, PropertyChangedEventArgs e)
+      {
+         FireChanges(sender, e.PropertyName);
+      }
+
+      private void Bias_PropertyChanged(object sender, PropertyChangedEventArgs e)
       {
          FireChanges(sender, e.PropertyName);
       }

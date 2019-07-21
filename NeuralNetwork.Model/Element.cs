@@ -60,18 +60,12 @@ namespace NeuralNetwork.Model
 
       private protected void FireChanges(object sender, string properyName)
       {
-         OnFireChanging();
          PropertyChanged?.Invoke(sender, new PropertyChangedEventArgs(properyName));
       }
 
       private protected void FireChanges(string properyName)
       {
          FireChanges(this, properyName);
-      }
-
-      private protected virtual void OnFireChanging()
-      {
-
       }
 
       private protected virtual void ValidateDuplicatedIChild(IDictionary<string, Element> acumulatedIds)
