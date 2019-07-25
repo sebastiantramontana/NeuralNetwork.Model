@@ -68,10 +68,12 @@ namespace NeuralNetwork.Model.Layers
          return count;
       }
 
-      public LayerBase SearchOutputLayer()
+      public NeuronLayer SearchOutputLayer()
       {
-         LayerBase outputlayer;
-         for (outputlayer = this; outputlayer.Next != null; outputlayer = outputlayer.Next) ;
+         NeuronLayer outputlayer = null;
+
+         for (var layer = this.Next; layer != null; layer = layer.Next)
+            outputlayer = layer;
 
          return outputlayer;
       }
